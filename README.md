@@ -1,2 +1,2 @@
-# WebServer
-Building a webserver in a shell scripting language!
+# WebServer_Bash
+Building a a simple WebServer using Bash Script, netcat and FIFO.
