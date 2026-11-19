@@ -1,0 +1,23 @@
+HTTP/1.1 200 OK
+Content-Type: <text>
+<html>
+    <head>
+        <style>
+            section {
+                display: inline-block;
+                margin-left: 40%;
+                margin-top: 10%;
+            }
+            input[name="name"]{
+                height: 30px;
+                margin-top: 20%;
+                border: 1px solid #999;
+                border-radius: 4px;
+            }
+        </style>
+    </head>
+    <form method="POST" action="/login">
+        <input type="text" name="name" />
+        <imput type="submit" value="Login"></imput>
+    </form>
+</html>
