@@ -28,11 +28,11 @@ Content-Type: text/html
 
         themeElem.addEventListener('click', function(evt) {
             if (nameElem.style.color == 'blue'){
-                name.Elem.style.color == 'black';
+                nameElem.style.color == 'black';
                 themeElem.text = 'Blue theme';
             } else {
                 nameElem.style.color = 'blue';
-                themeElem.text = 'Black theme'
+                themeElem.textContent = 'Black theme'
             }
         })
     </script>

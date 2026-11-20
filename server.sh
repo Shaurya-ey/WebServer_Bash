@@ -7,30 +7,21 @@
 rm -f response
 mkfifo response
 
-#Starting off with helping intructions for the users...
-welp(){
-    echo "Welcome to Shaurya's Bash Scripted Web Server!"
-    cat << "EOF"
-    -----
-    Shhhhhhh it's a login page...
-    -----
-EOF 
-}
 
 get_home(){
-    Response=$(cat home.html | sed "s/{{$C_name}}/$C_value/")
+    Response=$(cat Frontend/home.html | sed "s/{{$C_name}}/$C_value/")
 }
 get_login(){
-    Response=$(cat login.html)
+    Response=$(cat Frontend/login.html)
 }
 send_login(){
-    Response=$(cat send-login.lhttp | sed "s/{{$C_name}}/$C_value/") 
+    Response=$(cat Frontend/send-login.lhttp | sed "s/{{$C_name}}/$C_value/") 
 }
 send_logout(){
-    Response=$(cat send-logout.http | sed "s/{{$C_name}}/$C_value/")
+    Response=$(cat Frontend/send-logout.http | sed "s/{{$C_name}}/$C_value/")
 }
 send_404(){
-    Response=$(cat 404.html)
+    Response=$(cat Frontend/404.html)
 }
 handle_req(){
     #Read request
@@ -43,15 +34,18 @@ handle_req(){
         fi
         headline_regex='(.*?)\s(.*?)\sHTTP.*?'
         [["$tline" =~ $headline_regex ]] &&
-            Request=$(echo $trline | sed "s/$headline_regx/\1 \2/")
         
-        Content_length_regex='Content-Length:\s(.*?)'
-        [[ "$tline" =~ $Headline_regex ]] &&
-            Content_length=$(echo $tline | sed -E "s/$Content_length_regex/\1/")
-        
-        Cookie_regex='Coockie:\s(.*?)\=(.*?).*?'
-        [[ "$tline" =~ &Cookie_regex ]] &&
-            read Cookie_name Cookie_value <<< $(echo $tline | sed -E "s/$Cookie_regex/\1 \2/")
+        # Extract HTTP request method and path
+        if [[ -z "$Request" ]]; then
+            read -r Method Path Protocol <<< "$tline"
+            Path=${Path%%\?*}
+            Request="$Method $Path"
+        fi
+
+        # Extract Content-Length
+        if [[ "$tline" =~ ^[Cc]ontent-[Ll]ength:[[:space:]]*([0-9]+) ]]; then
+            Content_length="${BASH_REMATCH[1]}"
+        fi
     done
 
     #read body
@@ -70,13 +64,20 @@ handle_req(){
     
     #checking the request...
     case "$Request" in
-        "GET / ") get_home ;;
+        "GET /") get_home ;;
         "GET /login") get_login ;;
         "POST /login") send_login ;;
         "POST /logout") send_logout ;;
         *) send_404 ;;
     esac
-    echo -e $Response > response
+    {
+        printf 'HTTP/1.1 200 OK\r\n'
+        printf 'Content-Type: text/html; charset=UTF-8\r\n'
+        printf 'Content-Length: %s\r\n' "${#Response}"
+        printf 'Connection: close\r\n'
+        printf '\r\n'
+        printf '%s' "$Response"
+    } > response
 }
 
 echo 'Listening on port 2000...'
