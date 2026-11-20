@@ -34,7 +34,7 @@ handle_req(){
         fi
         headline_regex='(.*?)\s(.*?)\sHTTP.*?'
         [["$tline" =~ $headline_regex ]] &&
-        
+    
         # Extract HTTP request method and path
         if [[ -z "$Request" ]]; then
             read -r Method Path Protocol <<< "$tline"
